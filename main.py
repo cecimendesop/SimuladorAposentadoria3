@@ -1,63 +1,97 @@
 import flet as ft
-from flet import AppBar, ElevatedButton, Text, View, TextField, Dropdown, dropdown, Column, Image, Container
+from flet import (
+    ElevatedButton, Text, View, TextField,
+    Dropdown, dropdown, Column, Container, alignment, CrossAxisAlignment, Row
+)
 from flet.core.colors import Colors
 
 
 def main(page: ft.Page):
     page.title = "Simulador de Aposentadoria"
-    page.theme_mode = ft.ThemeMode.LIGHT
+    page.bgcolor = "#2F2F2F"
     page.window.width = 375
     page.window.height = 667
+    page.assets_dir = "static"
 
-    logo = Image(src="inss_logo.png", width=150, height=150)
 
-    # Componentes de entrada
-    input_idade = TextField(label="Idade", width=300)
-    input_tempo_contribuicao = TextField(label="Tempo de Contribuição (anos)", width=300)
-    input_media_salarial = TextField(label="Média Salarial", width=300)
+    input_idade = TextField(label="", width=320, hint_text="Idade", color="white",
+                            hint_style=ft.TextStyle(color="white"))
+    input_tempo_contribuicao = TextField(label="", width=320, hint_text="Tempo de Contribuição (anos)", color="white",
+                                         hint_style=ft.TextStyle(color="white"))
+    input_media_salarial = TextField(label="", width=320, hint_text="Média Salarial", color="white",
+                                     hint_style=ft.TextStyle(color="white"))
     input_genero = Dropdown(
-        label="Gênero",
-        options=[
-            dropdown.Option("Masculino"),
-            dropdown.Option("Feminino"),
-        ],
-        width=300
+        label="",
+        hint_text="Gênero",
+        options=[dropdown.Option("Masculino"), dropdown.Option("Feminino")],
+        width=320,
+        color="white",
+        hint_style=ft.TextStyle(color="white")
     )
     input_categoria = Dropdown(
-        label="Categoria de Aposentadoria",
+        label="",
+        hint_text="Categoria de Aposentadoria",
         options=[
             dropdown.Option("Idade"),
-            dropdown.Option("Tempo de Contribuição"),
+            dropdown.Option("Tempo de Contribuição")
         ],
-        width=300
+        width=320,
+        color="white",
+        hint_style=ft.TextStyle(color="white")
     )
 
-    resultado_texto = Text("", size=16)
-
+    resultado_texto = Text("", size=16, color="white")
     erro_texto = Text("", size=14, color=Colors.RED)
 
     def navegar_para_simulacao(e):
         page.views.append(
             View(
                 "/simulacao",
-                [
-                    AppBar(title=Text("Simulação"), bgcolor=Colors.PRIMARY_CONTAINER),
-                    Container(content=logo, alignment=ft.alignment.center),
-                    Column(
-                        controls=[
-                            input_idade,
-                            input_genero,
-                            input_tempo_contribuicao,
-                            input_media_salarial,
-                            input_categoria,
-                            erro_texto,
-                            ElevatedButton(text="Calcular", on_click=navegar_para_resultado, bgcolor=Colors.BLACK,
-                                           color=Colors.WHITE),
-                            ElevatedButton(text="Voltar", on_click=voltar)
-                        ],
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                    )
-                ],
+                bgcolor="#2F2F2F",
+                controls=[
+                    Row([
+                        Container(
+                            content=Column(
+                                controls=[
+                                    input_idade,
+                                    input_genero,
+                                    input_tempo_contribuicao,
+                                    input_media_salarial,
+                                    input_categoria,
+                                    erro_texto,
+                                    Container(
+                                        content=ElevatedButton(
+                                            text="RESULTADO",
+                                            on_click=navegar_para_resultado,
+                                            bgcolor="black",
+                                            color="white",
+                                            width=320,
+                                            height=40,
+                                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=20))
+                                        ),
+                                        alignment=alignment.center,
+                                        padding=10
+                                    ),
+                                    Container(
+                                        content=ElevatedButton(
+                                            text="Voltar",
+                                            on_click=voltar,
+                                            bgcolor="black",
+                                            color="white",
+                                            width=320,
+                                            height=40,
+                                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=20))
+                                        ),
+                                        alignment=alignment.center,
+                                        padding=5
+                                    )
+                                ],
+                                horizontal_alignment=CrossAxisAlignment.CENTER
+                            ),
+                            margin=15
+                        )
+                    ])
+                ]
             )
         )
         page.update()
@@ -71,13 +105,11 @@ def main(page: ft.Page):
             categoria = input_categoria.value
         except (ValueError, TypeError):
             resultado_texto.value = "Por favor, preencha todos os campos corretamente."
-            page.update()
             return
 
         if tempo_contribuicao > idade:
             erro_texto.value = "Erro: O tempo de contribuição não pode ser maior que a idade."
             resultado_texto.value = ""
-            page.update()
             return
         else:
             erro_texto.value = ""
@@ -105,34 +137,86 @@ def main(page: ft.Page):
             resultado_texto.value = f"Você já pode se aposentar! Benefício estimado: R$ {valor_beneficio:.2f}"
         else:
             resultado_texto.value = f"Você ainda não pode se aposentar. Faltam {anos_faltantes} anos."
-        page.update()
 
     def navegar_para_resultado(e):
         calcular_aposentadoria()
         page.views.append(
             View(
                 "/resultado",
-                [
-                    AppBar(title=Text("Resultado"), bgcolor=Colors.PRIMARY_CONTAINER),
-                    resultado_texto,
-                    ElevatedButton(text="Voltar", on_click=voltar)
-                ],
+                bgcolor="#2F2F2F",
+                controls=[
+                    Container(
+                        content=Text("RESULTADO", size=18, color="white"),
+                        padding=10
+                    ),
+                    Container(
+                        content=resultado_texto,
+                        padding=10
+                    ),
+                    Container(
+                        content=ElevatedButton(
+                            text="Voltar",
+                            on_click=voltar,
+                            bgcolor="black",
+                            color="white",
+                            width=320,
+                            height=40,
+                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=20))
+                        ),
+                        padding=10
+                    )
+                ]
             )
         )
         page.update()
 
     def navegar_para_regras(e):
+        def caixa_texto(texto):
+            return Container(
+                content=Text(texto, color="black"),
+                bgcolor="white",
+                padding=10,
+                border_radius=5,
+                width=320
+            )
+
         page.views.append(
             View(
                 "/regras",
-                [
-                    AppBar(title=Text("Regras"), bgcolor=Colors.PRIMARY_CONTAINER),
-                    Text("Aposentadoria por Idade: Homens - 65 anos e 15 anos de contribuição."),
-                    Text("Aposentadoria por Idade: Mulheres - 62 anos e 15 anos de contribuição."),
-                    Text("Aposentadoria por Tempo de Contribuição: Homens - 35 anos."),
-                    Text("Aposentadoria por Tempo de Contribuição: Mulheres - 30 anos."),
-                    ElevatedButton(text="Voltar", on_click=voltar)
+                bgcolor="#2F2F2F",
+                controls=[
+                    Column(
+                        controls=[
+                            ft.Container(
+                                content=ft.Image(src="/static/logo-inss-previdencia-social.png", width=150, height=150),
+
+                            ),
+                            caixa_texto(
+                                "APOSENTADORIA POR IDADE (HOMENS)\n65 anos de idade e pelo menos 15 anos de contribuição."),
+                            caixa_texto(
+                                "APOSENTADORIA POR IDADE (MULHERES)\n62 anos de idade e pelo menos 15 anos de contribuição."),
+                            caixa_texto("APOSENTADORIA POR TEMPO DE CONTRIBUIÇÃO (HOMENS)\n35 anos de contribuição."),
+                            caixa_texto("APOSENTADORIA POR TEMPO DE CONTRIBUIÇÃO (MULHERES)\n30 anos de contribuição."),
+                            caixa_texto("VALOR ESTIMADO DO BENEFÍCIO\n60% da média salarial, mais 2% por ano extra."),
+                            Container(
+                                content=ElevatedButton(
+                                    text="Voltar",
+                                    on_click=voltar,
+                                    bgcolor="black",
+                                    color="white",
+                                    width=320,
+                                    height=40,
+                                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=20))
+                                ),
+
+                            )
+                        ],
+
+                        alignment=alignment.top_left,
+                        horizontal_alignment=CrossAxisAlignment.CENTER
+                    )
                 ],
+
             )
         )
         page.update()
@@ -142,19 +226,36 @@ def main(page: ft.Page):
         page.views.append(
             View(
                 "/",
-                [
-                    AppBar(title=Text("Simulador de Aposentadoria"), bgcolor=Colors.PRIMARY_CONTAINER),
-                    Container(content=logo, alignment=ft.alignment.center),
+                bgcolor="#2F2F2F",
+                controls=[
+                    ft.Container(
+                        ft.Image(src="/static/logo-inss-previdencia-social.png", width=150, height=150),
+                        alignment=alignment.center,
+                        padding=20
+                    ),
                     Column(
                         controls=[
-                            ElevatedButton(text="Simulador", on_click=navegar_para_simulacao, bgcolor=Colors.BLACK,
-                                           color=Colors.WHITE),
-                            ElevatedButton(text="Regras", on_click=navegar_para_regras, bgcolor=Colors.BLACK,
-                                           color=Colors.WHITE),
+                            ElevatedButton(
+                                text="Simulador",
+                                on_click=navegar_para_simulacao,
+                                bgcolor="black",
+                                color="white",
+                                width=150,
+                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=20))
+                            ),
+                            ElevatedButton(
+                                text="Regras",
+                                on_click=navegar_para_regras,
+                                bgcolor="black",
+                                color="white",
+                                width=150,
+                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=20))
+                            ),
                         ],
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                        horizontal_alignment=CrossAxisAlignment.CENTER,
+                        spacing=20
                     )
-                ],
+                ]
             )
         )
         page.update()
@@ -170,11 +271,3 @@ def main(page: ft.Page):
 
 
 ft.app(main)
-
-
-
-
-
-
-
-
